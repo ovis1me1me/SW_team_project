@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+</head>
+<body>
+    <div id="chat"></div><br>
+    <img src="/마이멜로디.jpeg" alt="마이멜로디 사진~~~" width="270" height="200"><br>
+    <input type="text" id="messageInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script> //알고리즘이 들어가는 부분
+        const ws = new WebSocket('ws://localhost:8080');
+        const chat = document.getElementById('chat');
+        const messageInput = document.getElementById('messageInput');
+
+        ws.onmessage = function(event) { //버튼 클릭하면 기능 실행 
+            // event.data가 Blob 인스턴스일 경우 FileReader를 사용해서 읽어오기
+            if (event.data instanceof Blob) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const message = document.createElement('p'); 
+                    message.textContent = reader.result;
+                    chat.appendChild(message); //메세지 계속 이어붙이기 하는 거 다른 사람이 남긴 채팅 볼 수 있음
+                };
+                reader.readAsText(event.data);
+            } else {
+                // 메시지가 문자열인 경우, 직접 표시
+                const message = document.createElement('p');
+                message.textContent = event.data;
+                chat.appendChild(message);
+            }
+        };
+
+        function sendMessage() {
+            const message = messageInput.value;
+            ws.send(message);
+            messageInput.value = '';
+        }
+    </script>
+</body>
+</html>
